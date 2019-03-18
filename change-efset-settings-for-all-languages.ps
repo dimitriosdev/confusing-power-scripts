@@ -1,0 +1,24 @@
+$vItem = Get-Item -Path "master:/sitecore/content/Project/Online Marketing/OLT2017v2/Shared data sources/Settings/EFSET Params/EFSET Params"
+
+$langs = Get-Item $vItem.Paths.FullPath -Language *
+$langs | ForEach-Object {
+            if ($_.Fields["Partner ID"].Value -eq "ef-com-test")
+            {
+                    $_.Editing.BeginEdit()
+                    $_.Fields["Partner ID"].Value = "eflang-ww-olts"
+                    $_.Editing.EndEdit()
+            }
+
+            if ( $_.Fields["Test name"].Value -eq "express1604")
+            {
+                $_.Editing.BeginEdit()
+                $_.Fields["Test name"].Value = "set15-060"
+                $_.Editing.EndEdit()
+            }
+            if ( $_.Fields["Widget URL"].Value -eq "https://cdn.efset.org/efset-widget/v1/widget.js")
+            {
+                $_.Editing.BeginEdit()
+                $_.Fields["Widget URL"].Value = "https://qa-cdn.efset.org/efset-widget/v1/widget.js"
+                $_.Editing.EndEdit()
+            }
+        }
