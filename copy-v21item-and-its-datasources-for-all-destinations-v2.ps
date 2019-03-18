@@ -1,0 +1,71 @@
+$v21UKLondonItem = Get-Item -Path "master:/sitecore/content/efcom/ils/destinations/united-kingdom/london/v21"
+$v21Datasources = Get-Item -Path "master:/sitecore/content/efcom/ils/destinations/united-kingdom/london/2017/v2"
+
+$destinationCityTemplateId = "{59777C95-7C6A-437E-9414-82DC796231CE}"
+$destinationCountryTemplateId = "{ADD666EA-16CF-474A-898C-5BF3CD9E2906}"
+
+
+$destinationsPaths = @('/sitecore/content/efcom/ils/destinations')
+$destinationsPaths | ForEach-Object {
+    $destsPath = $_
+    $destinationsItem = Get-Item $_
+
+    $destinationCountryItems = Get-ChildItem -Path $destinationsItem.Paths.Path | Where-Object {
+            $_.TemplateId -eq $destinationCountryTemplateId
+        }
+    $destinationCountryItems | ForEach-Object {
+
+        $destinationCityItems = Get-ChildItem -Path $_.Paths.Path | Where-Object {
+            $_.TemplateId -eq $destinationCityTemplateId
+        }
+        $destinationCityItems.Paths.Path | ForEach-Object {
+            $destCity = $_
+            $v21 = Get-ChildItem -Path $_ | Where-Object {$_.Name -eq "v21"}
+            if (($v21 -ne $null) -and ($v21.Paths.Path.contains("v21")))
+            {
+                Write-Host "v21 item already exists for: " -ForegroundColor Red -NoNewLine
+                Write-Host $_.replace("/sitecore/content/efcom","") -ForegroundColor DarkGreen
+                
+                ## Edit datasources. This is executed if v21 item exists already.###
+                    Get-Rendering -Item $v21 | Foreach-Object {
+                        
+                        $newD = Get-Item $_.Datasource.Replace("/united-kingdom/london", $destCity.replace($destsPath,""));
+                        $_.Datasource = $newD.Paths.Path; Set-Rendering -Item $v21 -Instance $_ 
+                    }
+                
+            }
+            else 
+            {
+                Copy-Item -Path $v21UKLondonItem.Paths.Path $_
+            }
+            
+            # copy datasource folder
+            $chf = Get-ChildItem -Path $_ | Where-Object {$_.Name -eq "2017"}
+            if (($chf -ne $null) -and ($chf.Paths.Path.contains("2017")))
+            {
+                $chfv2 = Get-ChildItem -Path $chf.Paths.Path | Where-Object {$_.Name -eq "v2"}
+                if (($chfv2 -ne $null) -and ($chfv2.Paths.Path.contains("v2")))
+                {
+                    Write-Host "v2 datasource folder exists: " -ForegroundColor Red -NoNewLine
+                    Write-Host $chfv2.Paths.Path.replace("/sitecore/content/efcom","") -ForegroundColor Green
+                }
+                else 
+                {
+                    Copy-Item -Path $v21Datasources.Paths.Path $chf.Paths.Path -Recurse
+                }
+            }
+            else {
+                Write-Host "2017 datasource folder does NOT exists." -ForegroundColor Red
+            }
+            
+        }
+    }
+    
+    
+}
+
+		
+		
+
+   
+
