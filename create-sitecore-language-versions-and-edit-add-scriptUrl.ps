@@ -1,0 +1,63 @@
+$testPaths = @('/sitecore/content/efcom/tests/tests/epis-efset-express/lp/test/test-express','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/test/test-regular','/sitecore/content/efcom/tests/tests/epis-efset-plus/lp/test/test-plus','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1708/ar17clarin','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1709/ar17ubp','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1709/ar17ensenanza','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1709/ar17isl','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1709/ar17icab','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1709/ar17ile','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1708/cn17eapat','/sitecore/content/efcom/tests/tests/epis-efset-express/lp/1709/cn17davdian','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1709/ar17idiomas','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1709/ar17san-andres','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1709/ar17idra','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1709/ar17santa-maria','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1709/ar17santos-padres','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1709/ar17cordoba','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1709/cn17academy-uccup','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1709/ru17rssuni','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1709/ar17unr','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1709/kz17spellingbee2018','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1709/ar17utn','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1709/mx17motolina-oxaca','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1709/mx17motolina-preparatoria','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1709/es17san-luis','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1709/ar17uni-moron','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1709/ar17uca','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1709/mx17col-motolinia','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1709/co17uni-libre','/sitecore/content/efcom/tests/tests/epis-efset-express/lp/1709/cn17aiesec','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1709/co17uao','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1709/kz18kimep1','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1709/pe17usil','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1709/ru18ranepa-full','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1709/ru18skfu','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1709/mx17irishinstitute-1','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1709/mx17irishinstitute2','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1709/jp17tohoku-uni','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1709/jp17uec','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1709/mx17bmw','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1709/pl17kozminski-1','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1709/kz18kbtu-ise','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1709/cl17la-abadia/','/sitecore/content/efcom/tests/tests/epis-efset-express/lp/1709/pl17kozminski2','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1709/br17sartre','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1709/pa17alcogal','/sitecore/content/efcom/tests/tests/epis-efset-express/lp/1709/ru18ranepashort','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1709/ar17fisk','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1709/mx17uni-delvalle','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1710/mx18bas','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1710/ar18isic','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1710/cl18stmary-milagro','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1710/cl18csms','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1710/co18eam','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1710/mx18olmeca','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1710/br18cmi','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1710/pe18vivienda','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1710/mx18eaa','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1710/mx18ast','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1710/pt18anem','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1710/mx18san-patricio','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1710/pe18villa-caritas','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1710/br18aocubo','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1710/ve18los-robles','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1710/ru18nstu','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1710/es18debate2','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1710/ve18uec-apl','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1710/ve18colinas','/sitecore/content/efcom/tests/tests/epis-efset-express/lp/1710/ru18knhty','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1710/pa18bilingue','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1710/cl18agls','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1710/mx18cejaepis','/sitecore/content/efcom/tests/tests/epis-efset-express/lp/1710/fr18levicking','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1710/mx18fray','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1710/tr18okan','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1710/tr18iau','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1710/ve18col-sanvicentedp','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1710/ve18col-lasfuentes','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1710/ru18pguti','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1710/pe18lalito','/sitecore/content/efcom/tests/tests/epis-efset-regular/lp/1710/be18iscw')
+$testPaths | ForEach-Object {
+    $itemsToProcess = Get-Item $_
+    $itemsToProcess | ForEach-Object {
+        cd $_.Paths.Path
+        "Root item: " + $_.Name
+        $widgetItems = Get-ChildItem -recurse | Where-Object {
+            $_.TemplateId -eq "{544E59A3-B034-4E82-81C1-6CFC405C755A}"
+        }
+        $widgetItems | ForEach-Object {
+        $langs = Get-Item $_.Paths.FullPath -Language *
+        $_.Name + " has the following language versions: "+ $langs.Language.Name
+        
+        $languageParameters = @{ 
+            Path = $_.Paths.Path 
+            Language = "en" 
+            TargetLanguage = @('ar','ar-DZ','ar-LY','ar-SA','ar-TN','ar-AE','ru-AZ','az','ca-ES','zh-CN','zh-HK','zh-MO','zh-TW','hr','cs','da','nl','nl-BE','en','en-AU','en-CA','en-IN','en-IE','en-NZ','en-SG','en-GB','en-US','et','fo','fi','fr','fr-DZ','fr-BE','fr-CA','fr-LU','fr-CH','fr-TN','de','de-AT','de-LU','de-CH','el','hu','id','it','it-CH','ja','kk','ko','kr-KD','lt','no','fa','pl','pt','pt-BR','ru','en-SA','sk','sl','es','es-AR','es-VE','es-CL','es-CO','es-CR','es-MX','es-PA','es-PE','es-ES','es-UY','sv','sv-FI','th','tr','en-UE','en-UK','en-UD','vi','en-WA','en-WW','ar-WM','en-WE','fr-WC','pt-WP','ru-WR','es-WL') 
+        IfExist = "Skip" }
+        if ($langs.Count -ne 87)
+            {
+                "Adding all missing language versions..."
+                Add-ItemLanguage @languageParameters
+            }
+        $langs | ForEach-Object {
+            if ($_.Fields["ScriptUrl-LIVE"].Value -eq "")
+            {
+                if ($_.Language.Name -ne "zh-CN")
+                {
+                    $_
+                    'scriptUrl-live missing -not CN-'
+                    $_.Editing.BeginEdit()
+                    $_.Fields["ScriptUrl-LIVE"].Value = $widgetUrl
+                    $_.Editing.EndEdit()
+                }
+                else
+                {
+                    'scriptUrl-live missing -CN-'
+                    $_.Editing.BeginEdit()
+                    $_.Fields["ScriptUrl-LIVE"].Value = $widgetUrlChina
+                    $_.Editing.EndEdit()
+                }
+                
+            }
+
+            if (($_.Language.Name -eq "zh-CN") -and ($_.Fields["ScriptUrl-LIVE"].Value -eq $widgetUrl))
+            {
+                'China script url to be applied for ' +  $_.Name + ' item and its ' + $_.Language.Name + ' language version...'
+                $_.Editing.BeginEdit()
+                $_.Fields["ScriptUrl-LIVE"].Value = $widgetUrlChina
+                $_.Editing.EndEdit()
+            }
+        }
+		if ($langs.Count -eq 87)
+        {
+            Publish-Item -Language "*" -Item $_ -Target "Live-web" -PublishMode Smart -AsJob -Verbose
+        }
+		
+        "_________________________"
+    }
+        
+        
+    }
+}
