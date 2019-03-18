@@ -1,0 +1,113 @@
+$test2ctrl2 = "/EFCELT/2013/_scripts/olt-2013-registration-test2-ctrl2.js" 
+$test2ctrl2gdpr = "https://media.ef.com/~/media/efcom/code/language_test/gdpr/olt-2013-registration-test2-ctrl2.js" 
+
+$testRootPaths = ("/sitecore/content/efcom/tests/tests/epis-efset-plus/"`
+#"/sitecore/content/universal/Campaign Forms/OLT2013/academytest"`
+#"/sitecore/content/universal/Campaign Forms/OLT2013/EPIsForm",`
+#"/sitecore/content/universal/Campaign Forms/OLT2013/ExpandableOneColumnNew",`
+#"/sitecore/content/universal/Campaign Forms/OLT2013/ExpandableOneColumnnewTest2",`
+#"/sitecore/content/efcom/tests/tests/epis-efset-express",`
+#"/sitecore/content/efcom/tests/tests/epis-efset-regular",`
+#"/sitecore/content/efcom/tests/tests/epis-efset-plus"`
+)
+$testRootPaths | ForEach-Object {
+    Set-Location -Path $_
+    $testRootItems = Get-ChildItem -recurse | Where-Object {$_.TemplateId -eq "{A6EA8A8E-D99A-4D02-87BB-F974A2BB3DC5}"}
+    foreach ($testRootItem in $testRootItems)
+    {
+        if ($testRootItem["Included Scripts"].contains($test2ctrl2))
+        {
+			$jsField = $testRootItem["Included Scripts"].replace($test2ctrl2,$test2ctrl2gdpr)
+
+            $testRootItem.Editing.BeginEdit()
+            $testRootItem.Fields["Included Scripts"].Value = $jsField
+            $testRootItem.Editing.EndEdit()
+            Write-Host "Publish" $testRootItem.Paths.Path -ForegroundColor "Yellow" 
+            #Publish-Item -Item $testRootItem -Target "web" -PublishMode Smart -AsJob -Verbose
+        }
+        
+    }
+    $allColumns = Get-ChildItem -recurse| Where-Object { (($_.TemplateName -eq "Form Column") -and ($_.Name -eq "Column"))}
+    $downPartColumns = $allColumns | Where-Object { $_.parent.parent.Name -eq "DownPart"}
+    
+    foreach ($col in $downPartColumns) 
+    {
+        $formFields = Get-ChildItem $col.Paths.Path
+        
+        $privacyFieldExists = 0
+        foreach ($formField in $formFields)
+        {
+            if ($formField.Name -eq "PrivacyPolicy")
+            {
+                $privacyFieldExists = 1
+                if ($formField["API Field Name"] -ne "CheckboxCombined")
+                {
+                    Write-Host $formField.Paths.Path : $formField["API Field Name"] -ForegroundColor "Red"
+                    $formField.Editing.BeginEdit()
+                    $formField["API Field Name"] = "CheckboxCombined"
+                    $formField.Editing.EndEdit()
+                    Write-Host $formField.Paths.Path : CheckboxCombined -ForegroundColor "Green" 
+                }
+                break
+            }
+            else
+            {
+                $privacyFieldExists = 0
+            }
+        }
+        if ($privacyFieldExists -eq 0)
+        {
+            Copy-Item -Path "/sitecore/content/efcom/test3/Form/DownPart/Row/Column/PrivacyPolicy" -Destination $col.Paths.Path
+            Write-Host "PrivacyPolicy added for: " $col.parent.parent.parent.parent.Paths.Path -ForegroundColor "Green" 
+        }
+        
+        $privacyTextFieldExists = 0
+        foreach ($formField in $formFields)
+        {
+            if ($formField.Name -eq "PrivacyPolicyTextWithLink")
+            {
+                $privacyTextFieldExists = 1
+                if ($formField["API Field Name"] -ne "SubmitTextCombined")
+                {
+                    Write-Host $formField.Paths.Path : $formField["API Field Name"] -ForegroundColor "Red"
+                    $formField.Editing.BeginEdit()
+                    $formField["API Field Name"] = "SubmitTextCombined"
+                    $formField["Override IsRequired"] = 1
+                    $formField["Field Name"] = "SubmitTextCombined"
+                    $formField["Field Type"] = "CheckBox"
+                    $formField["Default Value"] = "True"
+                    $formField.Editing.EndEdit()
+                    Write-Host $formField.Paths.Path : SubmitTextCombined -ForegroundColor "Green"
+                }
+                break
+            }
+            else
+            {
+                $privacyTextFieldExists = 0
+            }
+        }
+        if ($privacyTextFieldExists -eq 0)
+        {
+            Copy-Item -Path "/sitecore/content/efcom/test3/Form/DownPart/Row/Column/PrivacyPolicyTextWithLink" -Destination $col.Paths.Path
+            Write-Host "PrivacyPolicyTextWithLink added for: " $col.parent.parent.parent.parent.Paths.Path -ForegroundColor "Yellow" 
+        }
+        
+        #remove old terms item
+        foreach ($formField in $formFields)
+        {
+            if ($formField.Name -eq "Terms")
+                {
+                    Write-Host Removing... -ForegroundColor "Magenta"
+                    Write-Host $formField.Paths.Path -ForegroundColor "Magenta"
+                    Remove-Item -Path $formField.Paths.Path
+                }
+        }
+    }
+    
+    #smart publish downPartColumns
+    foreach ($col in $downPartColumns) 
+    {
+        Write-Host "Publish" $col.Paths.Path -ForegroundColor "DarkGreen" 
+        #Publish-Item -Recurse -Item $col -Target "web" -PublishMode Smart -AsJob -Verbose
+    }
+}
