@@ -1,0 +1,188 @@
+$cherryTemplate = "{A6EA8A8E-D99A-4D02-87BB-F974A2BB3DC5}"
+$newCssRules = "<style>label[for=Gender_M],label[for=Gender_F]{width:50%;display:inline-block !important;text-align:center}label[for=Gender_M]>input,label[for=Gender_F]>input{position:static;display:inline-block;width:auto;margin-right:10px}.field legend{border-bottom:0;font-size:14px;margin-bottom:0}</style>"
+$cherryBowls = ("epis-efset-regular"`
+)
+
+
+
+Function get-path-by-name
+{
+    Param($testItemName)
+    $testsTestsPath = "/sitecore/content/efcom/tests/tests/"
+    return $testsTestsPath + $testItemName + "/lp"
+}
+Function valid-to-update
+{
+    Param($cssField)
+    if ($cssField.contains($newCssRules))
+    {return 0}
+    else
+    {return 1}
+}
+Function update-cherry
+{
+    Param($cherry, $cssField)
+    $cssField = $cssField + $newCssRules
+    $cherry.Editing.BeginEdit()
+    $cherry.Fields["Linked CSS"].Value = $cssField
+    $cherry.Editing.EndEdit()
+    
+}
+Function valid-to-publish
+{
+    Param($cherry)
+    $localPath = $cherry.Paths.FullPath
+    $targetPath = "web:" + $localPath
+    If(Test-Path $targetPath)
+    {
+        $targetItem = Get-Item -Path $targetPath
+        if ($targetItem.TemplateId -eq $cherryTemplate)
+        {
+            $cssFieldT = $targetItem["Linked CSS"]
+            return valid-to-update $cssFieldT
+        }
+        else 
+        {
+            return 0
+        }
+    } 
+    else 
+    {
+        return 1
+    }
+}
+Function publish-cherry
+{
+    Param($cherry)
+    if (valid-to-publish $cherry)
+    {
+        Write-Host "Publish" $cherry.Paths.Path -ForegroundColor "Yellow" 
+        Publish-Item -Item $cherry -Target "web" -PublishMode Smart -AsJob -Verbose
+    }
+}
+Function update-development-section
+{
+    Param($cherriesBasket)
+    
+    $cherriesUpdated = 0
+    $cherriesUpdatedAndPublished = 0
+    foreach ($cherry in $cherriesBasket)
+    {
+        if ($cherry.GetType() -eq [Item])
+        {
+            $cssField = $cherry["Linked CSS"]
+            if (valid-to-update $cssField)
+            {
+                update-cherry $cherry $cssField
+                $cherriesUpdated = $cherriesUpdated + 1
+            }
+            if (valid-to-publish $cherry)
+            {
+                publish-cherry $cherry
+                $cherriesUpdatedAndPublished = $cherriesUpdatedAndPublished + 1
+            }
+        }
+    }
+    Write-Host "Total cherries updated  : " $cherriesUpdated -ForegroundColor "Yellow"
+    Write-Host "Total cherries published: " $cherriesUpdatedAndPublished -ForegroundColor "Yellow"
+}
+Function gender-already-there
+{
+    Param($destinationPath)
+    $ch = Get-ChildItem -Path $destinationPath | Where-Object {$_.Name -eq "Gender"}
+    if ($ch -ne $null)
+    {
+        if ($ch.Paths.Path.contains("Gender"))
+        {
+            return 1
+        }
+    }
+    else
+    {
+        return 0
+    }
+}
+Function copy-gender
+{
+    Param($cherry)
+    $fromPath = "/sitecore/content/efcom/tests/tests/epis-efset-express/lp/test/test-express/Form/FirstPart/Row/Column/Gender"
+    $toPath = $cherry.Paths.Path + "/Form/FirstPart/Row/Column/"
+    $toPathValue = $toPath + "Gender/"
+    $toPathMaleFemale = $toPath + "Gender/values/"
+    
+    $gender = Get-Item -Path $fromPath
+    $genderValue = Get-ChildItem -Path $fromPath
+    $genderMaleFemale = Get-ChildItem -Path $genderValue.Paths.Path -recurse
+
+    if (!(gender-already-there $toPath))
+    {
+        Copy-Item -Path $gender.Paths.Path $toPath
+        Copy-Item -Path $genderValue.Paths.Path $toPathValue
+        Copy-Item -Path $genderMaleFemale.Paths.Path $toPathMaleFemale
+        return 1
+    }
+   
+    $webGender = Get-Item -Path ($toPath + "Gender")
+    $webGenderValue = Get-Item -Path ($toPath + "Gender/values")
+    $webGenderMale = Get-Item -Path ($toPath + "Gender/values/Male")
+    $webGenderFemale = Get-Item -Path ($toPath + "Gender/values/Female")
+    if (valid-to-publish $webGender)
+    {
+        publish-cherry $webGender
+    }
+    if (valid-to-publish $webGenderValue)
+    {
+        publish-cherry $webGenderValue
+    }
+    if (valid-to-publish $webGenderMale)
+    {
+        publish-cherry $webGenderMale
+    }
+    if (valid-to-publish $webGenderFemale)
+    {
+        publish-cherry $webGenderFemale
+    }
+    
+    
+    return 0
+
+}
+Function cherry-pick
+{
+    Param($cherryName)
+    $cherryTemplate = "{A6EA8A8E-D99A-4D02-87BB-F974A2BB3DC5}"
+    $cherriesBigBasket = [System.Collections.ArrayList]@()
+    $cherryPath = get-path-by-name($cherryName)
+    $cherriesBaskets = Get-ChildItem -Path $cherryPath | Where-Object {($_.TemplateName -eq "Folder") -and ($_.Name -ne "Shared Content")}
+    
+    foreach ($cherriesBasket in $cherriesBaskets)
+    {
+        $cherries = Get-ChildItem -Path $cherriesBasket.Paths.Path | Where-Object {$_.TemplateId -eq $cherryTemplate}
+        foreach ($cherry in $cherries)
+        {
+            $cherriesBigBasket.Add($cherry)
+        }
+    }
+    return $cherriesBigBasket
+}
+Function cherry-pop
+{
+    Param($cherries)
+    $cherriesWithGender = 0
+    $cherriesWithStyle = 0
+    update-development-section $cherries
+    foreach ($cherry in $cherries)
+    {
+        if ($cherry.GetType() -eq [Item])
+        {
+            copy-gender $cherry
+        }
+    }
+}
+"-----------"
+foreach ($cherryBowl in $cherryBowls)
+{
+    $cherries = cherry-pick $cherryBowl
+    Write-Host "Cherries picked: " ($cherries.Count / 2) -ForegroundColor "Yellow"
+    cherry-pop $cherries
+}
