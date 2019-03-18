@@ -1,0 +1,23 @@
+$master = [Sitecore.Configuration.Factory]::GetDatabase("master");
+$widgetv1Template = $master.Templates["EfCom/OLT/2013/Epis-Widget/v1/Site Root"];
+$templateIdWidgetv1 = "A6EA8A8E-D99A-4D02-87BB-F974A2BB3DC5"
+$destinationPaths = @("/sitecore/content/efcom/tests/tests/epis-efset-express/lp/1703","/sitecore/content/efcom/tests/tests/epis-efset-express/lp/1704")
+
+ForEach ($destinationPath in $destinationPaths)
+{
+cd $destinationPath
+$itemsToProcess = Get-ChildItem -recurse
+
+$siteRootItems = $itemsToProcess | Where-Object {$_.TemplateId -eq $templateIdWidgetv1 }
+$siteRootItems | ForEach-Object {
+   
+    $developmentField = Get-Item "/sitecore/content/efcom/tests/tests/epis-efset-regular" 
+    $JSField = $developmentField.Fields["Included Scripts"].Value
+    $_.Editing.BeginEdit()
+    $_.Fields["Included Scripts"].Value = $JSField
+    $_.Editing.EndEdit()
+    $_.Name + ': development section has beeen updated'    
+    
+    
+}
+}
