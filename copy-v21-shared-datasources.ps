@@ -1,0 +1,52 @@
+## copy 2017 datasources ##
+$ilsDatasourcesModulesv2 = Get-Item -Path "master:/sitecore/content/efcom/ils/2017 Datasources/Modules/v2"
+$ilsDatasourcesMenusv2 = Get-Item -Path "master:/sitecore/content/efcom/ils/2017 Datasources/Menus/v2"
+$ilsDatasourcesDestinations = Get-Item -Path "master:/sitecore/content/efcom/ils/2017 Datasources/Destinations"
+
+Function existsFunc
+{
+    Param($destinationPath)
+    $ch = Get-ChildItem -Path $destinationPath | Where-Object {$_.Name -eq "v2"}
+    if ($ch -ne $null)
+    {
+        if ($ch.Paths.Path.contains("v2"))
+        {
+            return 1
+        }
+    }
+    else
+    {
+        return 0
+    }
+}
+
+
+Function cpFunc
+{
+    Param($copyFrom, $copyTo)
+    if ((-not (existsFunc $copyTo)))
+    {
+        Copy-Item -Path $copyFrom $copyTo -Recurse
+    }
+}
+
+Function getFunc
+{
+    Param($product)
+    $v2Folders = Get-ChildItem -Path $ilsDatasourcesDestinations.Paths.Path -Recurse | Where-Object {($_.TemplateName -eq "Folder") -and ($_.Name -eq "v2")}
+    foreach ($v2Folder in $v2Folders)
+    {
+        $from = $v2Folder.Paths.Path
+        $to = $from.Replace("/ils/","/$product/")
+        cpFunc $from $to
+    }
+}
+
+$products = @("aya","ilsh","lsp","upa")
+$products | ForEach-Object {
+    $product = $_
+    cpFunc $ilsDatasourcesModulesv2.Paths.Path "master:/sitecore/content/efcom/$product/2017 Datasources/Modules"
+    cpFunc $ilsDatasourcesMenusv2.Paths.Path "master:/sitecore/content/efcom/$product/2017 Datasources/Menus"
+    getFunc $product
+    
+}
