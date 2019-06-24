@@ -1,0 +1,112 @@
+$destinationCityName = "Destination City Page"
+$courseTemplateName = "Course Detail Page"
+$courseCategoryTemplateName = "Course Category Page"
+$destinationCountryTemplateId = "{ADD666EA-16CF-474A-898C-5BF3CD9E2906}"
+$courseCategoryTemplatedId = "{9AA0555D-B660-4586-A1EC-7CEC9CE394C8}"
+
+$destinationsPaths = [System.Collections.ArrayList]@()
+$courseSectionPaths = [System.Collections.ArrayList]@()
+$promoRootPaths = [System.Collections.ArrayList]@()
+
+$products = @("ils", "aya", "lsp", "ilsh", "lt", "upa")
+
+$products | ForEach-Object {
+    $product = $_
+    $destinationsPaths.Add("/sitecore/content/efcom/${product}/destinations")
+    if ($product -ne "aya" -And $product -ne "upa" ) {
+        $courseSectionPaths.Add("/sitecore/content/efcom/${product}/courses")
+    } else {
+        $courseSectionPaths.Add("/sitecore/content/efcom/${product}/programmes")
+    }
+    $promoRootPaths.Add("/sitecore/content/efcom/${product}/news-and-offers/promotions")
+}
+
+$promoRootPaths | ForEach-Object {
+    $promoRootPath = $_
+    #Write-Host $promoRootPath
+    $promoRootItem = Get-Item $promoRootPath
+    
+    $promoFolderItems = Get-ChildItem -Path $promoRootPath
+    #$promoFolderItems.Paths.Path
+}
+
+$products | ForEach-Object {
+    $product = $_
+    #Write-Host $product.TemplateName  -ForegroundColor Red -BackgroundColor Yellow
+    $productHomePageItem = Get-Item "/sitecore/content/efcom/${product}"
+    
+    Write-Host "templateName =" ($productHomePageItem.TemplateName)  -ForegroundColor Yellow -BackgroundColor Black 
+    Write-Host "url =" ($productHomePageItem.Paths.Path.Replace("/sitecore/content/efcom",""))  -ForegroundColor Yellow -BackgroundColor Black 
+    Write-Host "sitecoreId =" ($productHomePageItem.ID)   -ForegroundColor Yellow -BackgroundColor Black 
+    Write-Host -NoNewline "datasourcesIds = " -ForegroundColor Yellow -BackgroundColor Black 
+    Get-Rendering -Item $productHomePageItem | Foreach-Object {
+    if ($_.Datasource -eq $null) {
+        #Write-Host "$Tab null"
+    } else {
+        if ($_.Datasource.Contains("/sitecore/content/efcom")) {
+            $item = Get-Item $_.Datasource.ToString()
+            Write-Host -NoNewline "$($item.ID)|"
+        } else {
+            Write-Host -NoNewline $_.Datasource"|"
+          
+        }
+    }
+    }
+    Write-Host ""
+}
+
+$destinationsPaths | ForEach-Object {
+    $destinationPath = $_
+    #Write-Host $destinationPath.Replace("/sitecore/content/efcom","") -ForegroundColor Red -BackgroundColor Black
+    $destinationItem = Get-Item $_
+
+    $destinationCountryItems = Get-ChildItem -Path $destinationPath | Where-Object {
+            $_.TemplateId -eq $destinationCountryTemplateId
+        }
+    $destinationCountryItems | ForEach-Object {
+        $destinationCountryItem = $_
+        #Write-Host $destinationCountryItem.Paths.Path.Replace("/sitecore/content/efcom","")  -ForegroundColor Green 
+
+        $destinationCityItems = Get-ChildItem -Path $_.Paths.Path | Where-Object {
+            $_.TemplateName -eq $destinationCityName
+        }
+        
+        $destinationCityItems | ForEach-Object {
+            $destinationCityItem = $_
+            #$Index_No = $destinationCityItem.Paths.Path.IndexOf($destinationCountryItem.Name)
+            #$destCityItemPath = $destinationCityItem.Paths.Path.substring($Index_No)
+            #Write-Host $destinationCityItem.Paths.Path.Replace("/sitecore/content/efcom","") -ForegroundColor Red
+        }
+    }
+}
+
+$courseSectionPaths | ForEach-Object {
+    $courseSectionPath = $_
+    #Write-Host $courseSectionPath.Replace("/sitecore/content/efcom","") -ForegroundColor Red -BackgroundColor Yellow
+    $courseSectionItem = Get-Item $courseSectionPath
+    
+    $courseCategoryItems = Get-ChildItem -Path $courseSectionPath | Where-Object {
+        $_.TemplateName -eq $courseCategoryTemplateName
+    }
+    
+    $courseCategoryItems | ForEach-Object {
+        $courseCategoryItem = $_
+        #Write-Host $courseCategoryItem.Paths.Path.Replace("/sitecore/content/efcom","") -ForegroundColor Green 
+
+        $coursesItems = Get-ChildItem -Path $courseCategoryItem.Paths.Path | Where-Object {
+            $_.TemplateName -eq $courseTemplateName
+        }
+        
+        $coursesItems | ForEach-Object {
+            $courseItem = $_
+            #$Index_No = $courseItem.Paths.Path.IndexOf($courseCategoryItem.Name)
+            #$crsItemPath = $courseItem.Paths.Path.substring($Index_No)
+            #Write-Host $courseItem.Paths.Path.Replace("/sitecore/content/efcom","") -ForegroundColor Red 
+        }
+    }
+    
+}
+		
+		
+
+   
