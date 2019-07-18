@@ -1,0 +1,88 @@
+$courseCategoryPageTemplateName = "Course Category Page"
+$courseConsolidatedPageTemplateName = "Course Consolidated Page"
+$courseDetailPageTemplateName = "Course Detail Page"
+$coursesRootPaths = [System.Collections.ArrayList]@()
+$products = @("ils", "aya", "lsp", "ilsh", "lt", "upa")
+#$products = @("ils")
+
+$config=@{
+    deviceDefault = Get-LayoutDevice "default"
+    deviceSites2014 = Get-LayoutDevice "Sites2014"
+    deviceSites2017 = Get-LayoutDevice "Sites2017"
+}
+function GetParamTable($params){
+    if($params -ne "" -and $params -ne $null){
+        $table=@{}
+        $vars = $params -split "&"
+        foreach($var in $vars){
+            $svar = $var -split "="
+            $table.Add($svar[0],$svar[1])
+        }
+        return $table
+    }
+    return @{}
+}
+
+function MoveRenderings($item, $deviceFrom, $deviceTo){
+    
+    $fromRenderings = get-rendering -Item $item -Device $deviceFrom
+    $fromLayout = get-layout -Item $item -Device $deviceFrom
+        
+    if($fromRenderings -ne $null){
+        remove-rendering -item $item -device $deviceTo
+        set-layout -item $item -device $deviceTo -layout $fromLayout
+        
+	    for($i=0; $i -lt $fromRenderings.length; $i++){
+            $fromRendering = $fromRenderings[$i]
+            $renderingItem = Get-Item master: -ID $fromRendering.ItemID
+            $params = GetParamTable($fromRendering.Parameters)
+            
+            if($params -eq $null){
+                add-Rendering -Item $item -Instance $fromRendering -Device $deviceTo -Placeholder $fromRendering.Placeholder -Index $i -DataSource $renderingItem.Datasource
+            }else{
+                add-Rendering -Item $item -Instance $fromRendering -Device $deviceTo -Placeholder $fromRendering.Placeholder -Index $i -DataSource $renderingItem.Datasource -Parameter $params
+            }
+        }
+    }
+}
+
+$products | ForEach-Object {
+    $product = $_
+    $product
+    if ((($product -ne "aya") -and (($product -ne "upa")))) {
+        $coursesRootPaths.Add("/sitecore/content/efcom/${product}/courses")
+    }
+    else {
+        $coursesRootPaths.Add("/sitecore/content/efcom/${product}/programmes")
+    }
+}
+
+$coursesRootPaths | ForEach-Object {
+	$courseRootPath = $_
+
+	$courseCategoryPageItems = Get-ChildItem -Path $courseRootPath | Where-Object {
+            ($_.TemplateName -eq $courseCategoryPageTemplateName)
+    }
+    $courseCategoryPageItems | ForEach-Object {
+        $courseCategoryPageItem = $_
+        $courseCategoryPageItem
+        
+        $defaultLayout = Get-Layout -Device $config.deviceDefault -Item $courseCategoryPageItem 
+        $sites2014Layout = Get-Layout -Device $config.deviceSites2014 -Item $courseCategoryPageItem 
+        $sites2017Layout = Get-Layout -Device $config.deviceSites2017 -Item $courseCategoryPageItem 
+
+            if (-not $sites2014Layout) {
+                $sites2014Layout = Get-Item -Path "master:/sitecore/layout/Layouts/EfCom/2014/Document 2014" 
+                Set-Layout -Item $courseCategoryPageItem -Device $config.deviceSites2014 -Layout $sites2014Layout
+                
+            }
+            if ($defaultLayout -and $defaultLayout.Name -eq "Document 2014") {
+                MoveRenderings $courseCategoryPageItem $config.deviceDefault $config.deviceSites2014
+                if ($sites2017Layout -and $sites2017Layout.Name -eq "Layout Without Mobile Menu") {
+                    MoveRenderings $courseCategoryPageItem $config.deviceSites2017 $config.deviceDefault 
+                }
+            }
+            
+    }
+    
+}
