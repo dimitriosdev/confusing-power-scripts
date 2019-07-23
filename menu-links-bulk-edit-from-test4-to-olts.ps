@@ -1,0 +1,20 @@
+$datasourcesRootPaths = [System.Collections.ArrayList]@()
+$products = @("aya","lsp","ils","ilsh","lt","upa")
+$products | ForEach-Object {
+    $product = $_
+    $datasourcesRootPaths.Add("master:/sitecore/content/efcom/${product}/2017 Datasources")
+}
+$datasourcesRootPaths | ForEach-Object {
+    $itemsToProcess = Get-ChildItem -Path $_ -Recurse | Where-Object {
+            ($_.TemplateID -eq "{0710CFB5-04C1-4B96-A406-F9FE6380A452}" -and ($_.Name -eq "Language test" -or $_.Name.contains("Language Skills")))
+    }
+    $itemsToProcess | ForEach-Object {
+        
+        if ($_.Fields["Link"].Value -ne "") {
+            #$_.Editing.BeginEdit()
+            #$_.Fields["Link"].Value = $_.Fields["Link"].Value.Replace("test4","olts")
+            #$_.Editing.EndEdit()
+            $_.Fields["Link"].Value.Replace("test4","olts")
+        }
+    }
+}
