@@ -16,5 +16,6 @@ $datasourcesRootPaths | ForEach-Object {
             #$_.Editing.EndEdit()
             $_.Fields["Link"].Value.Replace("test4","olts")
         }
+        #Publish-Item -Recurse -Item $_ -Target "web" -PublishMode Smart -AsJob -Verbose
     }
 }
