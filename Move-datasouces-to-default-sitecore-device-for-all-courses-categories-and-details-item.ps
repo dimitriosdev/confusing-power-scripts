@@ -1,0 +1,187 @@
+$itemsToProcess = [System.Collections.ArrayList]@()
+$coursesOverviewPaths = [System.Collections.ArrayList]@()
+
+$courseCategoryPageTemplateName = "Course Category Page"
+$courseConsolidatedPageTemplateName = "Course Consolidated Page"
+$courseDetailPageTemplateName = "Course Detail Page"
+
+$config=@{
+    deviceDefault = Get-LayoutDevice "default"
+    deviceSites2014 = Get-LayoutDevice "Sites2014"
+    deviceSites2017 = Get-LayoutDevice "Sites2017"
+}
+
+$products = @("lt","aya","ils","lsp","ilsh","upa")
+$products | ForEach-Object {
+    $product = $_
+    if ((($product -ne "aya") -and (($product -ne "upa")))) {
+        $coursesOverviewPaths.Add("/sitecore/content/efcom/${product}/courses")
+    }
+    else {
+        $coursesOverviewPaths.Add("/sitecore/content/efcom/${product}/programmes")
+    }
+}
+
+$coursesOverviewPaths | ForEach-Object {
+    $coursesOverviewPath = $_
+    $courseOverviewItem = Get-Item -Path $_
+    $itemsToProcess.Add($courseOverviewItem)
+    
+    
+    $courseCategoryPageItems = Get-ChildItem -Path $coursesOverviewPath | Where-Object {
+            ($_.TemplateName -eq $courseCategoryPageTemplateName)
+    }
+    $courseCategoryPageItems |  ForEach-Object {
+        $courseCategoryPageItem = $_
+        $itemsToProcess.Add($courseCategoryPageItem)
+        $courseDetailPageItems = Get-ChildItem -Path $courseCategoryPageItem.Paths.Path | Where-Object {
+            $_.TemplateName -eq $courseDetailPageTemplateName
+        }
+        $courseDetailPageItems |  ForEach-Object {
+            $courseDetailPageItem = $_
+            $itemsToProcess.Add($courseDetailPageItem)
+        }
+    }
+    
+    
+    $courseConsolidatedPageItems = Get-ChildItem -Path $coursesOverviewPath | Where-Object {
+            ($_.TemplateName -eq $courseConsolidatedPageTemplateName)
+    }
+    $courseConsolidatedPageItems |  ForEach-Object {
+        $courseConsolidatedPageItem = $_
+        $itemsToProcess.Add($courseConsolidatedPageItem)
+        $courseDetailPageItems = Get-ChildItem -Path $courseConsolidatedPageItem.Paths.Path | Where-Object {
+            $_.TemplateName -eq $courseDetailPageTemplateName
+        }
+        $courseDetailPageItems |  ForEach-Object {
+            $courseDetailPageItem = $_
+            $itemsToProcess.Add($courseDetailPageItem)
+        }
+    }
+}
+
+function GetParamTable($params){
+    if($params -ne "" -and $params -ne $null){
+        $table=@{}
+        $vars = $params -split "&"
+        foreach($var in $vars){
+            $svar = $var -split "="
+            $table.Add($svar[0],$svar[1])
+        }
+        return $table
+    }
+    return @{}
+}
+
+function MoveRenderings($item, $deviceFrom, $deviceTo){
+    
+    $fromRenderings = get-rendering -Item $item -Device $deviceFrom
+    $fromLayout = get-layout -Item $item -Device $deviceFrom
+        
+    if($fromRenderings -ne $null){
+        remove-rendering -item $item -device $deviceTo
+        set-layout -item $item -device $deviceTo -layout $fromLayout
+        
+	    for($i=0; $i -lt $fromRenderings.length; $i++){
+            $fromRendering = $fromRenderings[$i]
+            $renderingItem = Get-Item master: -ID $fromRendering.ItemID
+            $params = GetParamTable($fromRendering.Parameters)
+            
+            if($params -eq $null){
+                add-Rendering -Item $item -Instance $fromRendering -Device $deviceTo -Placeholder $fromRendering.Placeholder -Index $i -DataSource $renderingItem.Datasource
+            }else{
+                add-Rendering -Item $item -Instance $fromRendering -Device $deviceTo -Placeholder $fromRendering.Placeholder -Index $i -DataSource $renderingItem.Datasource -Parameter $params
+            }
+        }
+    }
+}
+
+
+function AddCourseDetailsRenderings ($item,$placeholder,$moduleName,$index,$rendering, $deviceInput)
+{
+	$contentDataSource = $item.Paths.path + "/2017/$moduleName"
+	$DatasourceItem = Get-Item $contentDataSource
+	$Datasource = $DatasourceItem.ID
+	$rendering = Get-Item master: -ID $rendering | New-Rendering
+	Add-Rendering -Item $item -Device $deviceInput -Rendering $rendering -PlaceHolder $placeholder -Index $index -DataSource $Datasource
+}
+
+
+$itemsToProcess | ForEach-Object {
+    $itemToProcess = $_
+    
+    $defaultLayout = Get-Layout -Device $config.deviceDefault -Item $itemToProcess -ErrorAction SilentlyContinue
+    $sites2014Layout = Get-Layout -Device $config.deviceSites2014 -Item $itemToProcess -ErrorAction SilentlyContinue
+    $sites2017Layout = Get-Layout -Device $config.deviceSites2017 -Item $itemToProcess -ErrorAction SilentlyContinue
+    $itemToProcess.Paths.Path
+    if (-not $defaultLayout) {
+        Write-Host "Default device/Layout name: NOT FOUND."-ForegroundColor Red 
+    } 
+    if (-not $sites2014Layout) {
+        Write-Host "Sites2014 device/Layout name: NOT FOUND." -ForegroundColor Red 
+    }
+    if (-not $sites2017Layout) {
+        Write-Host "Sites2017 device/Layout name: NOT FOUND."-ForegroundColor Red 
+    } 
+    Write-Host "Default device/Layout name: "$defaultLayout.Name -ForegroundColor Green 
+    Write-Host "Sites2014 device/Layout name: "$sites2014Layout.Name -ForegroundColor Green 
+    Write-Host "Sites2017 device/Layout name: "$sites2017Layout.Name -ForegroundColor Green 
+    
+    
+    if ($defaultLayout -and $defaultLayout.Name -eq "Layout Without Mobile Menu") {
+        "OK"
+    }
+    if ($defaultLayout -and $defaultLayout.Name -eq "Document 2014") {
+        if ($sites2014Layout) {
+            "Reset to Sites2014"
+            Remove-Rendering -item $itemToProcess -device $config.deviceSites2014 -ErrorAction SilentlyContinue
+            $sites2014Layout = Get-Item -Path "master:/sitecore/layout/Layouts/EfCom/2014/Document 2014" 
+            Set-Layout -Item $itemToProcess -Device $config.deviceSites2014 -Layout $sites2014Layout
+        } elseif (-not $sites2014Layout ) {
+            "Set Layout Sites2014"
+            $sites2014Layout = Get-Item -Path "master:/sitecore/layout/Layouts/EfCom/2014/Document 2014" 
+            Set-Layout -Item $itemToProcess -Device $config.deviceSites2014 -Layout $sites2014Layout
+        }
+        "Move from default -> Sites2014"
+        MoveRenderings $itemToProcess $config.deviceDefault $config.deviceSites2014
+        if ($sites2017Layout) {
+            "Move from Sites2017 -> default"
+            MoveRenderings $itemToProcess $config.deviceSites2017 $config.deviceDefault 
+        } elseif (-not $sites2017Layout) {
+            "Get datasources manually"
+            "1. Set the layout"
+            $sites2017Layout = Get-Item -Path "master:/sitecore/layout/Layouts/Language Sites/2017/Layout Without Mobile Menu" 
+            Set-Layout -Item $itemToProcess -Device $config.deviceSites2017 -Layout $sites2017Layout
+            "2. Add Renderings"
+            $datasourcesFolderItem = Get-ChildItem -Path $itemToProcess.Paths.Path | Where-Object {
+                $_.Name -eq "2017"
+            }
+            $datasources = Get-ChildItem -Path $datasourcesFolderItem.Paths.Path 
+            
+            For ($i=0; $i -le $datasources.length-1; $i++) {
+                $datasources[$i].Name
+                AddCourseDetailsRenderings $itemToProcess "placeholder" $datasources[$i].Name $i "{2CE69880-A787-485B-8892-4D1DC570FE06}" $config.deviceSites2017
+            }
+            
+
+        }
+    }
+    if (-not $defaultLayout -and (-not $sites2017Layout)) {
+        $2017DataFolder = Get-ChildItem -Path $itemToProcess.Paths.Path | Where-Object {
+            $_.Name -eq "2017" -and $_.TemplateName -eq "Folder"
+        }
+        $datasources = Get-ChildItem -Path $2017DataFolder.Paths.Path | Where-Object { 
+            $_.Name -ne "Course Schedule"
+        }
+        $datasources.Paths.Path
+        $sites2017Layout = Get-Item -Path "master:/sitecore/layout/Layouts/Language Sites/2017/Layout Without Mobile Menu" 
+        Set-Layout -Item $itemToProcess -Device $config.deviceDefault -Layout $sites2017Layout
+        For ($i=0; $i -le $datasources.length-1; $i++) {
+                $datasources[$i].Name
+                AddCourseDetailsRenderings $itemToProcess "placeholder" $datasources[$i].Name $i "{2CE69880-A787-485B-8892-4D1DC570FE06}" $config.deviceDefault
+            }
+        
+    }
+    "===="
+    
+}
