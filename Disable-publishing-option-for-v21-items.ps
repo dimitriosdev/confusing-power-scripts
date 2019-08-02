@@ -1,0 +1,42 @@
+$destinationsPaths = [System.Collections.ArrayList]@()
+$v2destinationCityTemplateId = "{1970B9E4-902D-4F2C-B04B-99F178F98A15}"
+$destinationCountryTemplateId = "{ADD666EA-16CF-474A-898C-5BF3CD9E2906}"
+$destinationCityName = "Destination City Page"
+
+$products = @("aya","lsp")
+$products | ForEach-Object {
+     $product = $_
+    $destinationsPaths.Add("/sitecore/content/efcom/${product}/destinations")
+}
+$destinationsPaths | ForEach-Object {
+    
+    $destinationPath = $_
+    $destinationItem = Get-Item $_
+
+    $destinationCountryItems = Get-ChildItem -Path $destinationPath | Where-Object {
+            $_.TemplateId -eq $destinationCountryTemplateId
+    }
+    $destinationCountryItems | ForEach-Object {
+        $destinationCountryItem = $_
+        Write-Host $destinationCountryItem.Name -ForegroundColor Red 
+        $destinationCityItems = Get-ChildItem -Path $_.Paths.Path | Where-Object {
+            $_.TemplateName -eq $destinationCityName
+        }
+        $destinationCityItems | ForEach-Object {
+            $_ 
+            $v21Items = Get-ChildItem -Path $_.Paths.Path | Where-Object {
+                $_.Name -eq "v21"
+            }
+            $v21Items | ForEach-Object {
+                Write-Host $_.Paths.Path -ForegroundColor Green
+                if ($_.Fields["__Never publish"].Value -ne "1") {
+                    $_.Editing.BeginEdit()
+                    $_.Fields["__Never publish"].Value = "1"
+                    $_.Editing.EndEdit()
+                }
+            }
+        }
+        
+          
+    }
+}
