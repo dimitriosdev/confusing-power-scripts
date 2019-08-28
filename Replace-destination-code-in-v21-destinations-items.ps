@@ -1,0 +1,36 @@
+$destinationCityTemplateId = "{59777C95-7C6A-437E-9414-82DC796231CE}"
+$destinationCityTemplateName = "Destination City Page"
+$destinationCountryTemplateId = "{ADD666EA-16CF-474A-898C-5BF3CD9E2906}"
+
+$products = @("aya","lsp","ils","ilsh","upa")
+$products | ForEach-Object {
+    $product = $_
+    $destinationsItemPath = "master:/sitecore/content/efcom/${product}/destinations"
+    
+    $destinationCountryItems = Get-ChildItem -Path $destinationsItemPath | Where-Object {
+            $_.TemplateId -eq $destinationCountryTemplateId
+    }
+    $destinationCountryItems | ForEach-Object {
+        $destinationCityItems = Get-ChildItem -Path $_.Paths.Path | Where-Object {
+            $_.TemplateName -eq $destinationCityTemplateName
+        }
+        $destinationCityItems.Paths.Path | ForEach-Object {
+            $v21 = Get-ChildItem -Path $_ | Where-Object {$_.Name -eq "v21"}
+            
+            if ($v21.Fields["Code"].Value -eq "LON" -or $v21.Fields["Code"].Value -eq "") {
+                $v21.Paths.Path 
+                #$v21.Fields["Code"].Value
+                $oItem = Get-Item $v21.Paths.Path.Replace("v21","")
+                #$oItem.Fields["Code"].Value
+                if ($oItem.Fields["Code"].Value -ne "") {
+                    #$v21.Editing.BeginEdit()
+                    #$v21.Fields["Code"].Value = $oItem.Fields["Code"].Value
+                    #$v21.Editing.EndEdit()
+                }
+            } else {
+                $v21.Fields["Code"].Value
+                
+            }
+        }
+    }
+}
