@@ -1,0 +1,47 @@
+$products = @("ils", "aya", "lsp", "ilsh", "lt", "upa")
+$courseTemplateName = "Course Detail Page"
+$courseCategoryTemplateName = "Course Category Page"
+$courseCategoryTemplatedId = "{9AA0555D-B660-4586-A1EC-7CEC9CE394C8}"
+$courseSectionPaths = [System.Collections.ArrayList]@()
+$products | ForEach-Object {
+    $product = $_
+
+    if ($product -ne "aya" -And $product -ne "upa" ) {
+        $courseSectionPaths.Add("/sitecore/content/efcom/${product}/courses")
+    } else {
+        $courseSectionPaths.Add("/sitecore/content/efcom/${product}/programmes")
+    }
+}
+
+$courseSectionPaths | ForEach-Object {
+    $courseSectionPath = $_
+    
+    Write-Host $courseSectionPath.Replace("/sitecore/content/efcom","") -ForegroundColor Yellow -BackgroundColor Red
+    $courseSectionItem = Get-Item $courseSectionPath
+    
+    $courseCategoryItems = Get-ChildItem -Path $courseSectionPath | Where-Object {
+        $_.TemplateName -eq $courseCategoryTemplateName
+    }
+    
+    $courseCategoryItems | ForEach-Object {
+        $courseCategoryItem = $_
+
+        Write-Host "`t"  $courseCategoryItem.Paths.Path.Replace("/sitecore/content/efcom","") -ForegroundColor Green 
+
+        $coursesItems = Get-ChildItem -Path $courseCategoryItem.Paths.Path | Where-Object {
+            $_.TemplateName -eq $courseTemplateName
+        }
+        
+        $coursesItems | ForEach-Object {
+            $courseItem = $_
+            #$Index_No = $courseItem.Paths.Path.IndexOf($courseCategoryItem.Name)
+            #$crsItemPath = $courseItem.Paths.Path.substring($Index_No)
+            Write-Host "`t `t"$courseItem.Paths.Path.Replace("/sitecore/content/efcom","") "=" $courseItem.Fields["Course Code"].Value -ForegroundColor Red 
+            #if ($courseItem.Fields["Course Code"].Value -eq "B") {
+                #Write-Host $courseItem.Fields["Course Code"].Value -BackgroundColor White -ForegroundColor Red
+            #}
+            
+        }
+    }
+    
+}
