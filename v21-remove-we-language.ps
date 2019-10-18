@@ -1,0 +1,26 @@
+$destinationCityTemplateId = "{59777C95-7C6A-437E-9414-82DC796231CE}"
+$destinationCityTemplateName = "Destination City Page"
+$destinationCountryTemplateId = "{ADD666EA-16CF-474A-898C-5BF3CD9E2906}"
+
+$products = @("aya","lsp","ils","ilsh","upa")
+$products | ForEach-Object {
+    $product = $_
+    $destinationsItemPath = "master:/sitecore/content/efcom/${product}/destinations"
+    
+    $destinationCountryItems = Get-ChildItem -Path $destinationsItemPath | Where-Object {
+            $_.TemplateId -eq $destinationCountryTemplateId
+    }
+    $destinationCountryItems | ForEach-Object {
+        $destinationCityItems = Get-ChildItem -Path $_.Paths.Path | Where-Object {
+            $_.TemplateName -eq $destinationCityTemplateName
+        }
+        $destinationCityItems.Paths.Path | ForEach-Object {
+            $v21 = Get-ChildItem -Path $_ | Where-Object {$_.Name -eq "v21"}
+            $langs = Get-Item $v21.Paths.FullPath -Language en-WE
+            if ($langs -ne $null) {
+                " remove en-WE " + $langs.Paths.Path
+                $langs | Remove-ItemLanguage -Language en-WE
+            }
+        }
+    }
+}
